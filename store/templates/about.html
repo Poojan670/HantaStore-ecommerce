@@ -1,0 +1,123 @@
+{% load static %}
+
+<head>
+    <title>About Us Section Design</title>
+
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+    <link rel='preload' as='style'
+        href='https://fonts.googleapis.com/css2?family=Open+Sans|Roboto:wght@300&display=swap'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Open+Sans|Roboto:wght@700&display=swap'>
+</head>
+
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+        font-family: 'Josefin Sans', sans-serif;
+        box-sizing: border-box;
+    }
+
+    .about {
+        width: 100%;
+        padding: 78px 0px;
+        background-color: #191919;
+    }
+
+    .about img {
+        height: auto;
+        width: 420px;
+    }
+
+    .about-text {
+        width: 550px;
+    }
+
+    .main {
+        width: 1130px;
+        max-width: 95%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+
+    .about-text h1 {
+        color: white;
+        font-size: 80px;
+        text-transform: capitalize;
+        margin-bottom: 20px;
+    }
+
+    .about-text h5 {
+        color: white;
+        font-size: 25px;
+        margin-bottom: 25px;
+        letter-spacing: 2px;
+    }
+
+    .about-text h5 a {
+        color: #f9004d;
+
+    }
+
+    span {
+        color: #f9004d;
+    }
+
+    .about-text p {
+        color: #fcfcfc;
+        letter-spacing: 1px;
+        line-height: 28px;
+        font-size: 18px;
+        margin-bottom: 45px;
+    }
+
+    button {
+        background: #f9004d;
+        color: white;
+        text-decoration: none;
+        border: 2px solid transparent;
+        font-weight: bold;
+        padding: 13px 30px;
+        border-radius: 30px;
+        transition: .4s;
+        justify-content: space-between;
+    }
+
+    button a {
+        color: white;
+        text-decoration: none;
+        border: 2px solid transparent;
+        font-weight: bold;
+        transition: .4s;
+        justify-content: space-between;
+    }
+
+    button:hover {
+        background: transparent;
+        border: 2px solid #f9004d;
+        cursor: pointer;
+    }
+</style>
+
+<body>
+    <section class="about">
+        <div class="main">
+            <img src="{% static 'images/me.jpg' %}">
+            <div class="about-text">
+                <h1>About Me</h1>
+                <h5>Developer & <a>Designer</a></h5>
+                <p>Thank you very much for visiting my site. The name "HantaStore" is referenced to my friend circle
+                    "Hantakaliz", bunch of doofus friends who enjoy eating and playing, and who support me all the time.
+                </p>
+                <p>This is one of my personal projects I did on my free time, Feel free to contact me for any problems
+                    or work enquiries!
+                </p>
+                <button type="button"><a href="{% url 'contact' %}">Let's Talk &nbsp;</a></button>
+                <button type="button"><a href="{% url 'store' %}">&nbsp; Return To Home</a></button>
+
+            </div>
+        </div>
+    </section>
+
+</body>

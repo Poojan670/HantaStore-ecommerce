@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <title>HantaStore</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+
+
+    <link rel="icon" href="{% static 'images/cart.png' %}" width="30" height="30" type="image/icon type">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script type="text/javascript">
+        var user = '{{request.user}}'
+
+        function getToken(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getToken('csrftoken');
+
+        function getCookie(name) {
+            var cookieArr = document.cookie.split(";");
+
+            for (var i = 0; i < cookieArr.length; i++) {
+                var cookiePair = cookieArr[i].split("=");
+
+                if (name == cookiePair[0].trim()) {
+                    return decodeURIComponent(cookiePair[1]);
+                }
+            }
+            return null;
+        }
+        var cart = JSON.parse(getCookie('cart'))
+
+        if (cart == undefined) {
+            cart = {}
+            console.log("Cart was created!")
+            document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/"
+        }
+
+        console.log('Cart:', cart)
+    </script>
+
+</head>
+<style>
+    .hello-user {
+        padding: 20px;
+        color: #000;
+    }
+
+    .btn-logout {
+        color: #fff;
+    }
+
+    .btn-login {
+        font-size: 100%;
+        font-style: bold Serif;
+        margin-left: 20px;
+        margin-bottom: 0px;
+        padding: 10px;
+        background-color: transparent;
+        font-weight: lighter;
+        transition: all 0.3s;
+    }
+
+    #one {
+        color: #000;
+    }
+
+    #one:hover {
+        color: whitesmoke;
+        background-color: #808080;
+        border-radius: 50%;
+    }
+
+    #two {
+        color: #000;
+    }
+
+    #two:hover {
+        color: whitesmoke;
+        background-color: #808080;
+        border-radius: 50%;
+
+    }
+
+    #three {
+        color: #000;
+    }
+
+    #three:hover {
+        color: whitesmoke;
+        background-color: #808080;
+        border-radius: 50%;
+    }
+
+    .h1-hanta {
+        margin-right: 150px;
+        color: #000;
+        font: 1rem monospace bold;
+        font-style: italic;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .hanta-img {
+        background-color: #000;
+        border-top-left-radius: 50% 50%;
+        border-top-right-radius: 50% 50%;
+        border-bottom-right-radius: 50% 50%;
+        border-bottom-left-radius: 50% 50%;
+    }
+
+    .fas {
+        width: 100%;
+        height: 100%;
+    }
+
+    .form-group {
+        width: 100%;
+        height: 100%;
+        margin-right: 30px;
+    }
+
+    .btn-search {
+        font-size: 100%;
+        font-style: bold Serif;
+        margin-left: 20px;
+        margin-bottom: 0px;
+        padding: 5px;
+        background-color: transparent;
+        font-weight: lighter;
+        transition: all 0.3s;
+        border: none;
+
+    }
+
+    .container {
+        margin-top: -300px;
+    }
+
+    #product-ratings {
+        color: orange;
+    }
+
+    #product-category {
+        color: #212121;
+        background-color: #fff;
+        font-size: 14px;
+        font-weight: 400;
+    }
+</style>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-light">
+        <a class="navbar-brand" href="{% url 'store' %}">
+            <!-- <img src="{% static 'images/hanta.png' %}" class="hanta-img" width="200" height="60"></a> -->
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <a id="two" href="{% url 'store' %}" class="btn-login">Home <span
+                            class="sr-only">(current)</span></a>
+                    {% if user.is_authenticated %}
+
+                    {% else %}
+                    <a href="{% url 'login' %}" class="btn-login" id="one">Login</a>
+
+                    {% endif %}
+                    <a href="{% url 'register' %}" class="btn-login" id="one">Register</a>
+                    {% if user.is_authenticated %}
+                    <a class="btn-login" id="three" href="{% url 'logout' %}">Logout </a>
+                    {% else %}
+                    {% endif %}
+
+                </ul>
+                <div>
+                    <a img src="{% static 'images/logo.png' %}"></a>
+                    <h2 class="h1-hanta">
+                        HantaStore
+                    </h2>
+                </div>
+                <div class="form-inline my-2 my-lg-0" action="/">
+                    <span class="hello-user">Hello, {{request.user}}</span>
+
+                    <form action="/search">
+                        <div class="form-group">
+                            <input name="q" type="text" class="form-control" id="search exampleInputPassword1"
+                                placeholder="Search a Product">
+                            <button type="submit" class="btn-search" id="three">Search </button>
+
+                        </div>
+                    </form>
+
+                </div>
+
+
+                <div class="form-inline my-2 my-lg-0">
+                    <a href="{% url 'cart' %}">
+                        <img id="cart-icon" src="{% static 'images/cart.png' %}">
+                    </a>
+                    <p id="cart-total">{{cartItems}}</p>
+                </div>
+            </div>
+
+    </nav>
+    <br>
+
+    <div class="d-flex" id="wrapper">
+        <div class="border-end bg-white" id="sidebar-wrapper">
+            <div class="list-group list-group-flush">
+                <article class="filter-group">
+                    <header class="list-group-item"> <a href="#" data-toggle="collapse" data-target="#collapse_aside1"
+                            data-abc="true" aria-expanded="false" class="collapsed"> <i class="icon-control "></i>
+                            <h6 class="title">Categories</h6>
+                        </a> </header>
+                    <div class="filter-content collapse" id="collapse_aside1" style="">
+                        <div class="card-body">
+                            {% for category in categories %}
+
+                            <li><a href="/category/{{category.id}}" data-abc="true"
+                                    id="product-category">{{category.product_category}} </a>
+                            </li>
+
+                            {% endfor %}
+                        </div>
+                    </div>
+                </article>
+                <article class="filter-groups">
+                    <header class="list-group-item list-group-item-action list-group-item-light p-3"> <a href="#"
+                            data-toggle="collapse" data-target="#collapse_aside2" data-abc="true" aria-expanded="false"
+                            class="collapsed">
+                            <h6 class="ratings">Ratings </h6>
+                        </a> </header>
+                    <div class="filter-content collapse" id="collapse_aside2" style="">
+                        <div class="card-body">
+                            <li>
+                                <a href="/ratings/1" data-abc="true" id="product-ratings">
+                                    <span class="fa fa-star"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/ratings/2" data-abc="true" id="product-ratings">
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/ratings/3" data-abc="true" id="product-ratings">
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/ratings/4" data-abc="true" id="product-ratings">
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/ratings/5" data-abc="true" id="product-ratings">
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                    <span class="fa fa-star"></span>
+                                </a>
+                            </li>
+                        </div>
+                    </div>
+                </article>
+                <article class="filter-shortcut">
+                    <header class="list-group-item list-group-item-action list-group-item-light p-3"> <a href="#"
+                            data-toggle="collapse" data-target="#collapse_aside3" data-abc="true" aria-expanded="false"
+                            class="collapsed"> <i class="icon-control "></i>
+                            <h6 class="ratings">Shortcuts </h6>
+                        </a> </header>
+                    <div class="filter-content collapse" id="collapse_aside3" style="">
+                        <div class="card-body">
+                            <li><a href="{% url 'store' %}" data-abc="true" id="product-category">Home</a></li>
+                            <li> <a href="{%  url 'cart' %}" data-abc="true" id="product-category">Cart</a></li>
+                            <li><a href="{%  url 'checkout' %}" data-abc="true" id="product-category">Checkout</a>
+                            </li>
+                        </div>
+                    </div>
+                </article>
+
+                <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/ratings/5">
+                    <h6>Popular</h6>
+                </a>
+                <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{% url 'contact' %}">
+                    <h6>Contact Us</h6>
+                </a>
+                <a class="list-group-item list-group-item-action list-group-item-light p-3" href="{% url 'about' %}">
+                    <h6>About Us</h6>
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+    <div class="container">
+        {% block content %}
+
+        {% endblock content %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="{% static 'js/cart.js' %}"></script>
+
+</body>
+
+</html>
