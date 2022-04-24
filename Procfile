@@ -1,0 +1,1 @@
+web: gunicorn hantastore.wsgi
