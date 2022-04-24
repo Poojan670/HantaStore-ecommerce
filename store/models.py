@@ -35,7 +35,7 @@ class Product(models.Model):
     digital = models.BooleanField(default=False, null=True, blank=True)
     featured = models.ImageField(null=True, blank=True, upload_to='products')
 
-    product_category = models.OneToOneField(
+    product_category = models.ForeignKey(
         Categories, on_delete=models.CASCADE)
     product_description1 = models.TextField(null=True, blank=True)
     product_description2 = models.TextField(null=True, blank=True)
@@ -68,8 +68,7 @@ class Product(models.Model):
             self.avg_rating = avg
             super(Product, self).save()
         except:
-            avg = 1
-            self.avg_rating = avg
+            self.avg_rating = self.avg_rating
             super(Product, self).save()
 
 
