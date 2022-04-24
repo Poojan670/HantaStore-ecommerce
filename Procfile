@@ -1,1 +1,1 @@
-web: gunicorn hantastore.wsgi
+web: gunicorn ecommerce.wsgi
