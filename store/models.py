@@ -1,6 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.db.models import Avg
 
 
 class Customer(models.Model):
@@ -14,7 +15,6 @@ class Customer(models.Model):
 
 
 class Categories(models.Model):
-
     product_choices = (
         ('Automotive Parts & Accessories', 'Automotive Parts & Accessories'),
         ('Electronics', 'Electronics'),
@@ -27,6 +27,9 @@ class Categories(models.Model):
     )
     product_category = models.CharField(
         choices=product_choices, null=True, blank=True, max_length=100)
+
+    def __str__(self):
+        return f"{self.id} : {self.get_product_category_display()}"
 
 
 class Product(models.Model):
@@ -52,24 +55,14 @@ class Product(models.Model):
     @property
     def imageURL(self):
         try:
-            url = self.featured.url
-        except:
-            url = ''
-        return url
+            return self.featured.url
+        except AttributeError or KeyError:
+            return ''
 
     def save(self, *args, **kwargs):
-        sum = 0
         ratings = Rating.objects.filter(product=self)
-        total_ratings = len(ratings)
-        for rating in ratings:
-            sum += rating.stars
-        try:
-            avg = sum / total_ratings
-            self.avg_rating = avg
-            super(Product, self).save()
-        except:
-            self.avg_rating = self.avg_rating
-            super(Product, self).save()
+        self.avg_rating = ratings.aggregate(Avg('stars'))['stars__avg'] or 0
+        super().save(*args, **kwargs)
 
 
 class Order(models.Model):
@@ -80,7 +73,7 @@ class Order(models.Model):
     transaction_id = models.CharField(max_length=100, null=True)
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} : {self.transaction_id} : {self.customer.name}"
 
     @property
     def shipping(self):
@@ -109,6 +102,9 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True)
     quantity = models.IntegerField(default=0, null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.id} : {self.order.transaction_id} : {self.product.name}"
 
     @property
     def get_total(self):
@@ -140,10 +136,9 @@ class Image(models.Model):
     @property
     def ProductimageURL(self):
         try:
-            url = self.image.url
-        except:
-            url = ''
-        return url
+            return self.image.url
+        except AttributeError or KeyError:
+            return ''
 
 
 class Rating(models.Model):
