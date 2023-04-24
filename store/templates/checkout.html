@@ -4,7 +4,7 @@
 
 
 <div class="row">
-    <div class="col-lg-6">
+    <div class="col-lg-4">
         <div class="box-element" id="form-wrapper">
             <form id="form">
                 <div id="user-info">
@@ -17,10 +17,8 @@
                 </div>
 
                 <div id="shipping-info">
-                    <hr>
+                    <div class="form-field" style="margin-top: 5rem">
                     <p>Shipping Information:</p>
-                    <hr>
-                    <div class="form-field">
                         <input class="form-control" type="text" name="address" placeholder="Address..">
                     </div>
                     <div class="form-field">
@@ -287,16 +285,18 @@
                     </div>
 
                 </div>
-                <hr>
+                <br>
                 <input id="form-button" class="btn btn-success btn-block" type="submit" value="Continue">
+                    <div class="box-element hidden" id="payment-info" style="height: 50px">
+                        <small>Paypal Options</small>
+                        <button id="make-payment" class="btn btn-success">Make Payment</button>
+                    </div>
             </form>
 
         </div>
+
         <br>
-        <div class="box-element hidden" id="payment-info">
-            <small>Paypal Options</small>
-            <button id="make-payment">Make Payment</button>
-        </div>
+
     </div>
 
     <div class="col-lg-6">
@@ -331,21 +331,21 @@
 
     var total = '{{order.get_cart_total}}'
 
-    if (shipping == 'False') {
+    if (shipping === 'False') {
         document.getElementById('shipping-info').innerHTML = ''
     }
 
-    if (user != 'AnonymousUser') {
+    if (user !== 'AnonymousUser') {
         document.getElementById('user-info').innerHTML = ''
     }
 
-    if (shipping == 'False' && user != 'AnonymousUser') {
+    if (shipping === 'False' && user !== 'AnonymousUser') {
         document.getElementById('form-wrapper').classList.add('hidden');
         document.getElementById('payment-info').classList.remove('hidden');
     }
 
 
-    var form = document.getElementById('form')
+    const form = document.getElementById('form');
 
     form.addEventListener('submit', function (e) {
         e.preventDefault()
@@ -361,20 +361,20 @@
     function submitFormData() {
         console.log('payment button clicked!')
 
-        var userFormData = {
+        const userFormData = {
             'name': null,
             'email': null,
             'total': total
-        }
+        };
 
-        var shippingInfo = {
+        const shippingInfo = {
             'address': null,
             'city': null,
             'state': null,
             'zip_code': null
-        }
+        };
 
-        if (shipping != 'False') {
+        if (shipping !== 'False') {
             shippingInfo.address = form.address.value
             shippingInfo.city = form.city.value
             shippingInfo.state = form.state.value
@@ -382,12 +382,12 @@
             shippingInfo.zip_code = form.zipcode.value
         }
 
-        if (user == 'AnonymousUser') {
+        if (user === 'AnonymousUser') {
             userFormData.name = form.name.value
             userFormData.email = form.email.value
         }
 
-        var url = '/process_order/'
+        const url = '/process_order/';
         fetch(url, {
             method: 'POST',
             headers: {
@@ -400,7 +400,7 @@
             })
         })
             .then((response) => {
-                return response.JSON
+                return response.json
             })
             .then((data) => {
                 console.log('Success:', data)

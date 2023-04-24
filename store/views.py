@@ -1,26 +1,27 @@
-from calendar import c
 from django.shortcuts import render, redirect
-from .models import *
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import JsonResponse
-import json
 import datetime
+import json
 from decimal import Decimal
-from .utils import cartData, cookieCart, guestOrder
-from django.contrib.auth import login
-from django.contrib import messages
-from django.views.decorators.csrf import csrf_protect
-from .forms import *
-from django.contrib.auth import authenticate, login, logout
-from django.template.loader import render_to_string
+
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail, BadHeaderError
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponse
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_protect
+
+from .forms import *
+from .models import *
+from .utils import cartData, guestOrder
 
 
 @csrf_protect
-def registerUser(request):
+def register_user(request):
     form = CreateUserForm()
 
     if request.method == "POST":
@@ -36,7 +37,7 @@ def registerUser(request):
             Customer.objects.create(user=new_user,
                                     name=new_user.username,
                                     email=new_user.email)
-            print("Successfuly registered")
+            print("Successfully registered")
 
             return redirect('login')
     context = {'form': form}
@@ -44,7 +45,7 @@ def registerUser(request):
 
 
 @csrf_protect
-def loginUser(request):
+def login_user(request):
 
     if request.method == "POST":
         username = request.POST.get("username")
@@ -64,7 +65,7 @@ def loginUser(request):
 
 
 @csrf_protect
-def logoutUser(request):
+def logout_user(request):
     logout(request)
     return redirect('store')
 
@@ -72,7 +73,7 @@ def logoutUser(request):
 def store(request):
 
     data = cartData(request)
-    cartItems = data['cartItems']
+    cart_items = data['cartItems']
 
     products = Product.objects.all().order_by('created_at')
     page = request.GET.get('page', 1)
@@ -88,7 +89,8 @@ def store(request):
         products = paginator.page(paginator.num_pages)
 
     context = {'products': products,
-               'cartItems': cartItems, 'categories': categories}
+               'cartItems': cart_items,
+               'categories': categories}
 
     return render(request, 'store.html', context)
 
@@ -96,92 +98,90 @@ def store(request):
 def cart(request):
 
     data = cartData(request)
-    cartItems = data['cartItems']
+    cart_items = data['cartItems']
     order = data['order']
     items = data['items']
 
-    context = {'items': items, 'order': order, 'cartItems': cartItems}
+    context = {'items': items, 'order': order, 'cartItems': cart_items}
     return render(request, 'cart.html', context)
 
 
 def checkout(request):
 
     data = cartData(request)
-    cartItems = data['cartItems']
+    cart_items = data['cartItems']
     order = data['order']
     items = data['items']
 
-    context = {'items': items, 'order': order, 'cartItems': cartItems}
+    context = {'items': items, 'order': order, 'cartItems': cart_items}
     return render(request, 'checkout.html', context)
 
 
-def updateItem(request):
+def update_item(request):
 
     data = json.loads(request.body)
-    productId = data['productId']
+    product_id = data['productId']
     action = data['action']
 
     customer = request.user.customer
 
-    product = Product.objects.get(id=productId)
+    product = Product.objects.get(id=product_id)
 
     order, created = Order.objects.get_or_create(
         customer=customer, complete=False)
 
-    orderItem, created = OrderItem.objects.get_or_create(
+    order_item, created = OrderItem.objects.get_or_create(
         order=order, product=product)
 
     if action == 'add':
-        orderItem.quantity = (orderItem.quantity + 1)
+        order_item.quantity = (order_item.quantity + 1)
     elif action == 'remove':
-        orderItem.quantity = (orderItem.quantity - 1)
+        order_item.quantity = (order_item.quantity - 1)
 
-    orderItem.save()
+    order_item.save()
 
-    if orderItem.quantity <= 0:
-        orderItem.delete()
+    if order_item.quantity <= 0:
+        order_item.delete()
 
     return JsonResponse('Item was added!', safe=False)
 
 
-def processOrder(request):
+def process_order(request):
 
     transaction_id = datetime.datetime.now().timestamp()
-
     data = json.loads(request.body)
-
     if request.user.is_authenticated:
-
         customer = request.user.customer
         order, created = Order.objects.get_or_create(
             customer=customer, complete=False)
 
-    try:
-        email_template = render_to_string('email.html',
-                                          {"name": customer.name,
-                                           "product": product.name})
-        send = EmailMultiAlternatives(
-            "Thank you for your Order",
-            "Order Confirmation From HantaStore",
-            settings.EMAIL_HOST_USER,
-            [customer.email],
-        )
-        send.attach_alternative(email_template, 'text/html')
-        send.send()
-    except Exception as e:
-        print(str(e))
-
+        order_items = order.orderitem_set.all()
+        products = []
+        try:
+            email_template = render_to_string('email.html',
+                                              {"name": customer.name,
+                                               "product": [products.append(item.product.name for item in order_items)]})
+            send = EmailMultiAlternatives(
+                "Thank you for your Order",
+                "Order Confirmation From HantaStore",
+                settings.EMAIL_HOST_USER,
+                [customer.email],
+            )
+            send.attach_alternative(email_template, 'text/html')
+            send.send()
+        except Exception as e:
+            print(str(e))
+            pass
     else:
-        cutomer, order = guestOrder(request, data)
-
+        customer, order = guestOrder(request, data)
     total = Decimal(data['form']['total'])
     order.transaction_id = transaction_id
-
-    # if total == order.get_cart_total:
-    order.complete = True
-    order.save()
-
-    if order.shipping == True:
+    if total == order.get_cart_total:
+        order.complete = True
+        order.save()
+    else:
+        return ValueError('Error in Total Calculation')
+    if order.shipping:
         ShippingAddress.objects.create(
             customer=customer,
             order=order,
@@ -191,81 +191,63 @@ def processOrder(request):
             country=data['shipping']['country'],
             zip_code=data['shipping']['zip_code'],
         )
-
     return JsonResponse('Payment Complete!', safe=False)
 
 
-def ProductView(request, pk):
+def product_view(request, pk):
     product = Product.objects.get(pk=pk)
-
     data = cartData(request)
-    cartItems = data['cartItems']
-
-    context = {'product': product, 'cartItems': cartItems}
+    cart_items = data['cartItems']
+    context = {'product': product, 'cartItems': cart_items}
     return render(request, 'view.html', context)
 
 
 def search(request):
-
     data = cartData(request)
-    cartItems = data['cartItems']
-
+    cart_items = data['cartItems']
     q = request.GET['q']
     products = Product.objects.filter(name__icontains=q).order_by('created_at')
-
     page = request.GET.get('page', 1)
     paginator = Paginator(products, 9)
-
     try:
         products = paginator.page(page)
     except PageNotAnInteger:
         products = paginator.page(1)
     except EmptyPage:
         products = paginator.page(paginator.num_pages)
-
-    context = {'products': products, 'cartItems': cartItems}
-
+    context = {'products': products, 'cartItems': cart_items}
     return render(request, 'search.html', context)
 
 
-def categoryFilter(request, pk):
-
+def category_filter(request, pk):
     product_category = Categories.objects.get(pk=pk)
-
     products = Product.objects.filter(
         product_category=product_category).order_by('created_at')
-
     data = cartData(request)
-    cartItems = data['cartItems']
-
+    cart_items = data['cartItems']
     categories = Categories.objects.all()
-
     page = request.GET.get('page', 1)
     paginator = Paginator(products, 9)
-
     try:
         products = paginator.page(page)
     except PageNotAnInteger:
         products = paginator.page(1)
     except EmptyPage:
         products = paginator.page(paginator.num_pages)
-
     context = {'products': products,
-               'cartItems': cartItems, 'categories': categories, 'FilterCat': product_category}
-
+               'cartItems': cart_items, 'categories': categories, 'FilterCat': product_category}
     return render(request, 'category.html', context)
 
 
-def ratingsFilter(request, num):
+def ratings_filter(request, num):
 
-    product_rating = num
     products = Product.objects.filter(
         avg_rating=num).order_by('created_at')
 
     product_first = products.first()
 
     data = cartData(request)
-    cartItems = data['cartItems']
+    cart_items = data['cartItems']
 
     categories = Categories.objects.all()
 
@@ -280,7 +262,7 @@ def ratingsFilter(request, num):
         products = paginator.page(paginator.num_pages)
 
     context = {'products': products,
-               'cartItems': cartItems,
+               'cartItems': cart_items,
                'categories': categories,
                "product_first": product_first}
 
