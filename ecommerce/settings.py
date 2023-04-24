@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 import environ
-import django_heroku
 
 env = environ.Env(
     # set casting, default value
@@ -155,4 +154,4 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
 
-django_heroku.settings(locals())
+# django_heroku.settings(locals())
