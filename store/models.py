@@ -56,7 +56,7 @@ class Product(models.Model):
     def imageURL(self):
         try:
             return self.featured.url
-        except AttributeError or KeyError:
+        except:
             return ''
 
     def save(self, *args, **kwargs):
@@ -137,7 +137,7 @@ class Image(models.Model):
     def ProductimageURL(self):
         try:
             return self.image.url
-        except AttributeError or KeyError:
+        except:
             return ''
 
 
